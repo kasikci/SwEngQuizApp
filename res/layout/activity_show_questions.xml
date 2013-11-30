@@ -9,7 +9,7 @@
     tools:context=".ShowQuestionsActivity" >
 
     <TextView
-        android:id="@+id/questionText"
+        android:id="@+id/showQuestionsQuestionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -19,29 +19,28 @@
         android:text="question"/>
 
     <Button
-        android:id="@+id/nextQuestion"
+        android:id="@+id/showQuestionsNextQuestion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/questionText"
+        android:layout_alignLeft="@+id/showQuestionsQuestionText"
         android:layout_alignParentBottom="true"
         android:text="@string/next_question" />
 
     <TextView
-        android:id="@+id/tags"
+        android:id="@+id/showQuestionsTags"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/nextQuestion"
-        android:layout_alignLeft="@+id/nextQuestion"
-        android:layout_marginBottom="18dp"
-        android:text="tags" />
+        android:layout_above="@+id/showQuestionsNextQuestion"
+        android:layout_alignLeft="@+id/showQuestionsNextQuestion"
+        android:layout_marginBottom="18dp" />
 
     <ListView
-        android:id="@+id/answers"
+        android:id="@+id/showQuestionsAnswers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/tags"
-        android:layout_alignLeft="@+id/questionText"
-        android:layout_below="@+id/questionText"
+        android:layout_above="@+id/showQuestionsTags"
+        android:layout_alignLeft="@+id/showQuestionsQuestionText"
+        android:layout_below="@+id/showQuestionsQuestionText"
         android:layout_marginTop="22dp" >
 
     </ListView>

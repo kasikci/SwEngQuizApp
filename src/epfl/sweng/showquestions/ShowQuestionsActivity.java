@@ -30,7 +30,6 @@ import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 
 public class ShowQuestionsActivity extends Activity {
-	private TextView textView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -87,15 +86,19 @@ public class ShowQuestionsActivity extends Activity {
 	
 	// TODO: pass in a quiz question here, perhaps?
 	public void displayQuizQuestion(int id, String question,
-			List<String> answers, int solutionIndex, JSONArray tagsArray) {
+			List<String> answers, int solutionIndex, List<String> tags) {
 		// display the question
-		
+		TextView questionTextView = (TextView) findViewById(R.id.showQuestionsQuestionText);
+		questionTextView.setText(question);
 		// display the answers
 		String[] answersArray = answers.toArray(new String[answers.size()]);
-		ArrayAdapter adapter = new ArrayAdapter<String>(this, 
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, 
 		        android.R.layout.simple_list_item_1, answersArray);
-		ListView listView = (ListView) findViewById(R.id.answers);
+		ListView listView = (ListView) findViewById(R.id.showQuestionsAnswers);
 		listView.setAdapter(adapter);
+		// display the tags
+		TextView tagTextView = (TextView) findViewById(R.id.showQuestionsTags);
+		tagTextView.setText(tags.toString());
 	}
 	
 	/*
@@ -125,25 +128,23 @@ public class ShowQuestionsActivity extends Activity {
 		
 		// onPostExecute displays the results of the AsyncTask.
 	    @Override
-	    protected void onPostExecute(String questionString) {
-	        textView.setText(questionString);
-	        
+	    protected void onPostExecute(String questionString) {	        
 	        try {
 				JSONObject jsonObject = new JSONObject(questionString);
-				int id = (Integer) jsonObject.get("id");
-				String question = (String) jsonObject.get("question");
-				JSONArray answersArray = (JSONArray) jsonObject.get("answers");
+				int id = jsonObject.getInt("id");
+				String question = jsonObject.getString("question");
+				JSONArray answersArray = (JSONArray) jsonObject.getJSONArray("answers");
 				List<String> answers = new ArrayList<String>();
 				for (int i = 0; i < answersArray.length(); i++) {
 					answers.add(answersArray.get(i).toString());
 				}
-				int solutionIndex = (Integer) jsonObject.get("solutionIndex");
-				JSONArray tagsArray = (JSONArray) jsonObject.get("tags");
+				int solutionIndex = (Integer) jsonObject.getInt("solutionIndex");
+				JSONArray tagsArray = (JSONArray) jsonObject.getJSONArray("tags");
 				List<String> tags = new ArrayList<String>();
-				for (int i = 0; i < answersArray.length(); i++) {
-					tags.add(answersArray.get(i).toString());
+				for (int i = 0; i < tagsArray.length(); i++) {
+					tags.add(tagsArray.get(i).toString());
 				}
-				ShowQuestionsActivity.this.displayQuizQuestion(id, question, answers, solutionIndex, tagsArray);
+				ShowQuestionsActivity.this.displayQuizQuestion(id, question, answers, solutionIndex, tags);
 				
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
