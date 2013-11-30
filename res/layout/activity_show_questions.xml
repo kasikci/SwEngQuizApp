@@ -9,11 +9,41 @@
     tools:context=".ShowQuestionsActivity" >
 
     <TextView
-        android:id="@+id/showQuestionTextView"
+        android:id="@+id/questionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp" />
+        android:layout_marginLeft="40dp"
+        android:layout_marginTop="21dp"
+        android:text="question"/>
+
+    <Button
+        android:id="@+id/nextQuestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/questionText"
+        android:layout_alignParentBottom="true"
+        android:text="@string/next_question" />
+
+    <TextView
+        android:id="@+id/tags"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/nextQuestion"
+        android:layout_alignLeft="@+id/nextQuestion"
+        android:layout_marginBottom="18dp"
+        android:text="tags" />
+
+    <ListView
+        android:id="@+id/answers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tags"
+        android:layout_alignLeft="@+id/questionText"
+        android:layout_below="@+id/questionText"
+        android:layout_marginTop="22dp" >
+
+    </ListView>
 
 </RelativeLayout>

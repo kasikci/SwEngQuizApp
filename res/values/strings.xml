@@ -8,5 +8,6 @@
     <string name="show_a_random_question">Show a random question</string>
     <string name="submit_a_quiz_question">Submit a quiz question</string>
     <string name="title_activity_show_questions">ShowQuestionsActivity</string>
+    <string name="next_question">Next question</string>
 
 </resources>

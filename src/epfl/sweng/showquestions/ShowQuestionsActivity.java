@@ -1,12 +1,18 @@
 package epfl.sweng.showquestions;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import epfl.sweng.servercomm.SwengHttpClientFactory;
 import epfl.sweng.swengquizapp.R;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,6 +23,8 @@ import android.content.Context;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v4.app.NavUtils;
@@ -30,7 +38,6 @@ public class ShowQuestionsActivity extends Activity {
 		setContentView(R.layout.activity_show_questions);
 		// Show the Up button in the action bar.
 		setupActionBar();
-		textView = (TextView) findViewById(R.id.showQuestionTextView); 
 		// create an async task to fetch the question
 		showARandomQuestion();
 	}
@@ -40,7 +47,7 @@ public class ShowQuestionsActivity extends Activity {
 		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if(networkInfo != null && networkInfo.isConnected()) {
-			new GetAsyncTaskHttpURL().execute("https://sweng-quiz.appspot.com/quizquestions/random");
+			new GetAsyncTask().execute("https://sweng-quiz.appspot.com/quizquestions/random");
 		} else {
 			Toast.makeText(this, "No network connection!", Toast.LENGTH_SHORT).show();
 		}
@@ -78,56 +85,71 @@ public class ShowQuestionsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private class GetAsyncTaskHttpURL extends AsyncTask<String, Void, String> {
+	// TODO: pass in a quiz question here, perhaps?
+	public void displayQuizQuestion(int id, String question,
+			List<String> answers, int solutionIndex, JSONArray tagsArray) {
+		// display the question
+		
+		// display the answers
+		String[] answersArray = answers.toArray(new String[answers.size()]);
+		ArrayAdapter adapter = new ArrayAdapter<String>(this, 
+		        android.R.layout.simple_list_item_1, answersArray);
+		ListView listView = (ListView) findViewById(R.id.answers);
+		listView.setAdapter(adapter);
+	}
+	
+	/*
+	 * The AsyncTask of ShowQuestionsActivity
+	 * Fetches a random quiz question from the server
+	 */	
+	private class GetAsyncTask extends AsyncTask<String, Void, String> {
 		private static final String DEBUG_TAG = "GetAsyncTask";
 		
 		@Override
 		protected String doInBackground(String... urls) {
-	        try {
-	            return downloadUrl(urls[0]);
-	        } catch (IOException e) {
-	            return "Unable to retrieve web page. URL may be invalid.";
-	        }
+			if (urls.length != 1)
+				throw new IllegalArgumentException("GET not called with 1 argument!");
+			
+        	HttpGet randomQuestion = new HttpGet(urls[0]);
+        	ResponseHandler<String> firstHandler = new BasicResponseHandler();
+			try {
+				String question = SwengHttpClientFactory.getInstance().execute(randomQuestion, firstHandler);
+				return question;
+			} catch (ClientProtocolException e) {
+				Log.d(DEBUG_TAG, "ClientProtocolException: Unable to retrieve web page. URL may be invalid.");			
+			} catch (IOException e) {
+				return "IOException: Unable to retrieve web page. URL may be invalid.";
+			}
+			return "No answer from the server!";
 		}
 		
 		// onPostExecute displays the results of the AsyncTask.
 	    @Override
-	    protected void onPostExecute(String result) {
-	        textView.setText(result);
-	   }
-
-		private String downloadUrl(String downloadUrl) throws IOException{
-			InputStream inputStream = null;
-			// only display the first 1000 characters of the page
-			int len = 1000; 
-			try{
-				URL url = new URL(downloadUrl);
-				HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-				connection.setReadTimeout(10000); // milliseconds
-				connection.setConnectTimeout(15000);
-				connection.setRequestMethod("GET");
-				connection.setDoInput(true);
-				// initiate the query
-				connection.connect();
-				int response = connection.getResponseCode();
-				Log.d(DEBUG_TAG, "The response is: " + response);
-				inputStream = connection.getInputStream();			
-				// Convert the InputStream into a string
-				String contentAsString = readIt(inputStream, len);
-				return contentAsString;
-			} finally{
-				if(inputStream != null)
-					inputStream.close();
+	    protected void onPostExecute(String questionString) {
+	        textView.setText(questionString);
+	        
+	        try {
+				JSONObject jsonObject = new JSONObject(questionString);
+				int id = (Integer) jsonObject.get("id");
+				String question = (String) jsonObject.get("question");
+				JSONArray answersArray = (JSONArray) jsonObject.get("answers");
+				List<String> answers = new ArrayList<String>();
+				for (int i = 0; i < answersArray.length(); i++) {
+					answers.add(answersArray.get(i).toString());
+				}
+				int solutionIndex = (Integer) jsonObject.get("solutionIndex");
+				JSONArray tagsArray = (JSONArray) jsonObject.get("tags");
+				List<String> tags = new ArrayList<String>();
+				for (int i = 0; i < answersArray.length(); i++) {
+					tags.add(answersArray.get(i).toString());
+				}
+				ShowQuestionsActivity.this.displayQuizQuestion(id, question, answers, solutionIndex, tagsArray);
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		}
-
-		private String readIt(InputStream inputStream, int len) throws IOException {
-			Reader reader = null;
-			reader = new InputStreamReader(inputStream, "UTF-8");
-			char [] buffer = new char[len];
-			reader.read(buffer);
-			return new String(buffer);
-		}	
-	}
+	   }	
+	}	
 
 }
